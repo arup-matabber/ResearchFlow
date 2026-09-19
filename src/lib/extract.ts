@@ -88,7 +88,7 @@ async function guardedFetch(startUrl: string): Promise<GuardedFetch> {
  */
 export async function fetchAndExtract(rawUrl: string): Promise<FetchedSource> {
   const fetched = await guardedFetch(rawUrl);
-  if (!fetched.ok) return failed(rawUrl, fetched.reason);
+  if (fetched.ok === false) return failed(rawUrl, fetched.reason);
 
   const { response, finalUrl: url } = fetched;
 

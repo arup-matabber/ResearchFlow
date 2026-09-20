@@ -1,0 +1,47 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "durable-research-agent",
+  "main": "src/server.ts",
+  "compatibility_date": "2026-06-11",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Workers AI has no local emulation, so this binding proxies to the real
+  // Cloudflare network even under `wrangler dev`. It is the one thing in this
+  // project that requires `wrangler login`.
+  "ai": { "binding": "AI", "remote": true },
+
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/agents/*"]
+  },
+
+  // The chat session: conversation, run tracker, and brief archive all live in
+  // this object's SQLite.
+  "durable_objects": {
+    "bindings": [
+      {
+        "class_name": "ResearchAgent",
+        "name": "ResearchAgent"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "new_sqlite_classes": ["ResearchAgent"],
+      "tag": "v1"
+    }
+  ],
+
+  // Durable execution for the research pipeline. Runs locally under
+  // `wrangler dev`; state persists in .wrangler/state across restarts.
+  "workflows": [
+    {
+      "name": "research-workflow",
+      "binding": "RESEARCH_WORKFLOW",
+      "class_name": "ResearchWorkflow"
+    }
+  ],
+
+  "observability": { "enabled": true }
+}
